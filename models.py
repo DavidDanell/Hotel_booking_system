@@ -1,6 +1,6 @@
 from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy import Integer, String, Enum, DECIMAL, Date, Boolean, ForeignKey
-from database import Base, engine
+from database import Base
 
 
 
@@ -46,4 +46,4 @@ class Invoice(Base):
     is_paid= mapped_column(Boolean, nullable= False)
 
 
-Base.metadata.create_all(engine)
+#Base.metadata.create_all(engine)

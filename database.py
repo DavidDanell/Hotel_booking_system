@@ -1,9 +1,14 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine('sqlite:///Hotel.db', echo= True)
 
-Base = declarative_base()
+my_url= "mysql+pymysql://root:cucumba@localhost:3306/namn"
+#engine = create_engine('sqlite:///Hotel.db', echo= True)
 
-SessionLocal= sessionmaker(bind = engine)
+class Base(DeclarativeBase):
+    pass
+
+#Base = declarative_base()
+
+#SessionLocal= sessionmaker(bind = engine)
