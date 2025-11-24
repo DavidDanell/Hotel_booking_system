@@ -3,8 +3,11 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import sessionmaker
 
 
-my_url= "mysql+pymysql://root:cucumba@localhost:3306/namn"
-#engine = create_engine('sqlite:///Hotel.db', echo= True)
+my_url= "mysql+pymysql://root:cucumba@localhost:3306/hotel"
+engine = create_engine(my_url) #
+Session = sessionmaker(bind= engine)
+session= Session()
+
 
 class Base(DeclarativeBase):
     pass

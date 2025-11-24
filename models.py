@@ -1,18 +1,31 @@
-from sqlalchemy.orm import mapped_column, relationship
-from sqlalchemy import Integer, String, Enum, DECIMAL, Date, Boolean, ForeignKey
+from sqlalchemy.orm import mapped_column, relationship, Mapped, MappedAsDataclass
+from sqlalchemy import Integer, String, Enum as SAEnum, DECIMAL, Date, Boolean, ForeignKey
 from database import Base
+from database import session
+from enum import Enum
+
+class Bed_type(Enum):
+    SINGLE = 'single_bed'
+    DOUBLE = 'double_bed'
 
 
+class Extra_beds(Enum):
+    NONE = '0'
+    ONE = '1'
+    TWO = '2'
 
-class Room(Base):
+
+class Room(MappedAsDataclass, Base):
     __tablename__= 'Rooms'
 
-    id= mapped_column(Integer, primary_key= True)
-    room_number= mapped_column(Integer, unique= True, nullable= False)
-    number_of_beds= mapped_column(Enum('single_bed', 'double_bed'), nullable= False)
-    possible_extra_beds= mapped_column(Enum('1', '2', '0'), nullable= False)
-    price_per_night= mapped_column(DECIMAL(10, 2), nullable= False)
+    id: Mapped[int]= mapped_column(Integer, primary_key= True, init= False)
+    room_number: Mapped[int]= mapped_column(Integer, unique= True, nullable= False)
+    number_of_beds: Mapped[Bed_type]= mapped_column(SAEnum(Bed_type), nullable= False)
+    possible_extra_beds: Mapped[Extra_beds]= mapped_column(SAEnum(Extra_beds), nullable= False)
+    price_per_night: Mapped[float]= mapped_column(DECIMAL(10, 2), nullable= False)
 
+    def __repr__(self) -> str:
+        return f'id: {self.id}, room number: {self.room_number}, bed type: {self.number_of_beds.name}, possible extra beds: {self.possible_extra_beds.name}, price/ night: {self.price_per_night} kr'
 
 class Guest(Base):
     __tablename__= 'Guests'
@@ -33,7 +46,7 @@ class Booking(Base):
     check_out_date= mapped_column(Date, nullable= False)
     number_of_people= mapped_column(Integer, nullable= False)
     price= mapped_column(DECIMAL(10, 2), nullable= False)
-    extra_beds= mapped_column(Enum('1', '2', '0'), nullable= False)
+    extra_beds= mapped_column(SAEnum(Extra_beds), nullable= False)
 
 
 class Invoice(Base):
@@ -46,4 +59,45 @@ class Invoice(Base):
     is_paid= mapped_column(Boolean, nullable= False)
 
 
+
+# room1 = Room(
+#     room_number= 1,
+#     number_of_beds = Bed_type.SINGLE,
+#     possible_extra_beds = Extra_beds.ONE,
+#     price_per_night = 300
+#     )
+
+# room2 = Room(
+#     room_number= 2,
+#     number_of_beds= Bed_type.DOUBLE,
+#     possible_extra_beds= Extra_beds.TWO,
+#     price_per_night= 500
+# )
+
+#session.add_all([room1, room2])
+alla_rum = session.query(Room).all()
+
+def add_room(room_number: int, bed_type: Bed_type, extra_beds: Extra_beds, price: int):
+    existing_room = session.query(Room).filter_by(room_number = room_number).first()
+
+    if existing_room:
+        print("Det finns redan ett rum med detta nummer!")
+        return existing_room
+    
+    new_room = Room(
+        room_number=room_number,
+        number_of_beds=bed_type,
+        possible_extra_beds= extra_beds,
+        price_per_night= price
+    )
+
+    session.add(new_room)
+    session.commit()
+    return F'New room added: room number- {new_room.room_number}'
+
+add_room(1, Bed_type.SINGLE, Extra_beds.ONE, 300)
+
+rum1= session.query(Room).filter_by(room_number = 1).first()
+
+print(rum1)
 #Base.metadata.create_all(engine)
