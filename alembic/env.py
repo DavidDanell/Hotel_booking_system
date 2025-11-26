@@ -6,11 +6,15 @@ from sqlalchemy import pool
 from alembic import context
 
 #MINA:
-from database import my_url   #min url
+from database.db import my_url   #min url
 #importera alla modeller:
 
-from database import Base
-from models import Room, Guest, Booking, Invoice
+from models.base import Base
+from models.rooms import Room
+from models.guest import Guest
+from models.bookings import Booking
+from models.invoices import Invoice
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
