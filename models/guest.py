@@ -1,6 +1,7 @@
 from sqlalchemy.orm import mapped_column, relationship, Mapped, MappedAsDataclass
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy import Integer, String
 from models.base import Base
+
 
 
 class Guest(MappedAsDataclass, Base):
@@ -11,4 +12,4 @@ class Guest(MappedAsDataclass, Base):
     second_name: Mapped[str]= mapped_column(String(100), nullable= False)
     email_address: Mapped[str]= mapped_column(String(250), unique= True, nullable= False)
 
-
+    bookings: Mapped[list["Booking"]] = relationship(back_populates= 'guest', init= False)

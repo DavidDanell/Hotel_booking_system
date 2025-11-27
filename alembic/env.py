@@ -4,24 +4,18 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-
-#MINA:
-from database.db import my_url   #min url
-#importera alla modeller:
-
+# MINE:
 from models.base import Base
 from models.rooms import Room
 from models.guest import Guest
 from models.bookings import Booking
 from models.invoices import Invoice
-
+from database.db import my_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", my_url)                                    #MIN. "my_url är url till min databas"
-
-
+config.set_main_option("sqlalchemy.url", my_url)     #mine
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -31,13 +25,13 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = Base.metadata                                                               #ändra till target_metadata= Base.metadata
-                                                                                            # efter detta skriver vi:alembic revision --autogenerate -m "initial migration" i terminalen
-# other values from the config, defined by the needs of env.py,                             sen:alembic upgrade head   -betyder ugradera till senaste, commit?
-# can be acquired:                                                                          det finns även: alembic upgrade +1    - lägg till
-# my_important_option = config.get_main_option("my_important_option")                       alembic downgrade -1                  - gå tillbaka
-# ... etc.                                                                                  alembic upgrade version_id            - vet inte
-                                                                                        #   alembic stamp base                    -från början?
+target_metadata = Base.metadata
+
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

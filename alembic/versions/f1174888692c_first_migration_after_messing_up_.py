@@ -1,8 +1,8 @@
-"""first
+"""First migration after messing up migration history
 
-Revision ID: 12a60f4de473
+Revision ID: f1174888692c
 Revises: 
-Create Date: 2025-11-24 12:44:17.951054
+Create Date: 2025-11-27 16:46:53.559639
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '12a60f4de473'
+revision: str = 'f1174888692c'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,8 +26,8 @@ def upgrade() -> None:
     sa.Column('first_name', sa.String(length=100), nullable=False),
     sa.Column('second_name', sa.String(length=100), nullable=False),
     sa.Column('email_address', sa.String(length=250), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email_address')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_Guests')),
+    sa.UniqueConstraint('email_address', name=op.f('uq_Guests_email_address'))
     )
     op.create_table('Rooms',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -35,31 +35,34 @@ def upgrade() -> None:
     sa.Column('number_of_beds', sa.Enum('SINGLE', 'DOUBLE', name='bed_type'), nullable=False),
     sa.Column('possible_extra_beds', sa.Enum('NONE', 'ONE', 'TWO', name='extra_beds'), nullable=False),
     sa.Column('price_per_night', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('room_number')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_Rooms')),
+    sa.UniqueConstraint('room_number', name=op.f('uq_Rooms_room_number'))
     )
     op.create_table('Bookings',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('room_id', sa.Integer(), nullable=True),
-    sa.Column('guest_id', sa.Integer(), nullable=True),
+    sa.Column('room_id', sa.Integer(), nullable=False),
+    sa.Column('guest_id', sa.Integer(), nullable=False),
     sa.Column('check_in_date', sa.Date(), nullable=False),
     sa.Column('check_out_date', sa.Date(), nullable=False),
     sa.Column('number_of_people', sa.Integer(), nullable=False),
     sa.Column('price', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('extra_beds', sa.Enum('NONE', 'ONE', 'TWO', name='extra_beds'), nullable=False),
-    sa.ForeignKeyConstraint(['guest_id'], ['Guests.id'], ),
-    sa.ForeignKeyConstraint(['room_id'], ['Rooms.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['guest_id'], ['Guests.id'], name=op.f('fk_Bookings_guest_id_Guests')),
+    sa.ForeignKeyConstraint(['room_id'], ['Rooms.id'], name=op.f('fk_Bookings_room_id_Rooms')),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_Bookings')),
+    sa.UniqueConstraint('guest_id', name=op.f('uq_Bookings_guest_id')),
+    sa.UniqueConstraint('room_id', name=op.f('uq_Bookings_room_id'))
     )
     op.create_table('Invoices',
     sa.Column('id', sa.String(length=35), nullable=False),
-    sa.Column('booking_id', sa.Integer(), nullable=True),
+    sa.Column('booking_id', sa.Integer(), nullable=False),
     sa.Column('total_amount', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('issue_date', sa.Date(), nullable=False),
     sa.Column('end_date', sa.Date(), nullable=False),
     sa.Column('is_paid', sa.Boolean(), nullable=False),
-    sa.ForeignKeyConstraint(['booking_id'], ['Bookings.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['booking_id'], ['Bookings.id'], name=op.f('fk_Invoices_booking_id_Bookings')),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_Invoices')),
+    sa.UniqueConstraint('booking_id', name=op.f('uq_Invoices_booking_id'))
     )
     # ### end Alembic commands ###
 

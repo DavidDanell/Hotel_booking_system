@@ -19,6 +19,8 @@ from database.db import Session
 
 add_room(4, Bed_type.SINGLE, Extra_beds.NONE, 300)
 with Session() as session:
+    
+    
     while True:
         print('==============================\nVälkommen till hotellet!\n==============================')
         print('1. Boknings meny\n2. Adminmeny\n0. Avsluta')
