@@ -14,4 +14,4 @@ class Invoice(MappedAsDataclass, Base):
     end_date: Mapped[Date]= mapped_column(Date, nullable= False)
     is_paid: Mapped[bool]= mapped_column(Boolean, nullable= False)
 
-    booking: Mapped["Booking"] = relationship(back_populates= 'invoice', uselist= False, init= False)
+    bookings: Mapped["Booking"] = relationship(back_populates= 'invoice', uselist= False, init= False)

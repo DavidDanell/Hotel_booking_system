@@ -1,10 +1,9 @@
 from database.db import Session
 from models.bookings import Booking
-from models.guest import Guest
+from models.guest import Guest, add_guest, is_valid_email
 from models.invoices import Invoice
 from models.rooms import Room, add_room
 from models.typings import Bed_type, Extra_beds
-from database.db import Session
 
 
 
@@ -36,7 +35,7 @@ with Session() as session:
         elif val == '1':
             while True:
                 print('==============================\nVälkommen till bokningsmenyn!\n==============================')
-                print('1. Registrera ny kund\n2. Registrera en bokning\n3. Sök efter lediga rum\n0. Gå tillbaka')
+                print('1. Registrera ny gäst\n2. Registrera en bokning\n3. Sök efter lediga rum\n0. Gå tillbaka')
                 val = input('>>>')
                 if val not in ('1', '2', '3', '0'):
                     print( 'Valet måste vara: "1", "2", "3" eller "0"!')
@@ -45,4 +44,24 @@ with Session() as session:
                 elif val =='0':
                     break
 
+                if val == '1':
+                    
+                    firstname=input('Vad är gästens förnamn?: ')
+                    if not firstname.isalpha():
+                        print('Namn måste bestå av bokstäver!')
+                        continue                          
+                    
+                    secondname=input('Vad är gästens efternamn?: ')
+                    if not secondname.isalpha():
+                        print('Namn måste bestå av bokstäver!')
+                        continue
+
+                    email=input('Vad är gästens email?: ')
+                    koll=is_valid_email(email)
+                    if not koll:
+                        print('Emailen har ogiltigt format\nGiltigt format: "namn@outlook.com"')
+                        continue
+                    
+                    add_guest(firstname, secondname, email)
+                    
     pass

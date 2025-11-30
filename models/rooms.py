@@ -11,10 +11,10 @@ class Room(MappedAsDataclass, Base):
     __tablename__= 'Rooms'
 
     id: Mapped[int]= mapped_column(Integer, primary_key= True, init= False)
-    room_number: Mapped[int]= mapped_column(Integer, unique= True, nullable= False)
+    room_number: Mapped[int]= mapped_column(Integer, unique= True, nullable= False, init= True)
     number_of_beds: Mapped[Bed_type]= mapped_column(SAEnum(Bed_type), nullable= False, init= True)
     possible_extra_beds: Mapped[Extra_beds]= mapped_column(SAEnum(Extra_beds), nullable= False, init= True)
-    price_per_night: Mapped[float]= mapped_column(DECIMAL(10, 2), nullable= False)
+    price_per_night: Mapped[float]= mapped_column(DECIMAL(10, 2), nullable= False, init= True)
 
     bookings: Mapped[list["Booking"]] = relationship(back_populates= 'room', init= False)
 
@@ -38,7 +38,7 @@ class Room(MappedAsDataclass, Base):
 
 
 
-def add_room(room_number: int, bed_type: Bed_type, extra_beds: Extra_beds, price: int):
+def add_room(room_number: int, bed_type: Bed_type, extra_beds: Extra_beds, price: int) -> Room | None:
     with Session() as func_session:
         
         existing_room = func_session.query(Room).filter_by(room_number = room_number).first()
@@ -56,7 +56,7 @@ def add_room(room_number: int, bed_type: Bed_type, extra_beds: Extra_beds, price
 
         func_session.add(new_room)
         func_session.commit()
-        return f'New room added: room number- {new_room.room_number}'
+        print(f'New room added: room number- {new_room.room_number}')
     
         
 
