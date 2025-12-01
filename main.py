@@ -1,19 +1,13 @@
 from database.db import Session
 from models.bookings import Booking
-from models.guest import Guest, add_guest, is_valid_email
+from services.booking_service import create_booking
+from models.guest import Guest
+from services.guest_service import add_guest, is_valid_email
 from models.invoices import Invoice
-from models.rooms import Room, add_room
+from models.rooms import Room
+from services.room_service import add_room
 from models.typings import Bed_type, Extra_beds
-
-
-
-#rum=Room(4, Bed_type.SINGLE, Extra_beds.NONE, 300)
-# add_room(1, Bed_type.SINGLE, Extra_beds.ONE, 300)
-#session.add(rum)
-#session.commit()
-# rum1= session.query(Room).filter_by(room_number = 1).first()
-#session.close()
-# print(rum1)
+from datetime import date, datetime
 
 
 add_room(4, Bed_type.SINGLE, Extra_beds.NONE, 300)
@@ -63,5 +57,11 @@ with Session() as session:
                         continue
                     
                     add_guest(firstname, secondname, email)
+
+
+                if val == '2':    
+                    #nästa är skapa gäst och rum , se en kolla som frågar om man vill använda tidigare skapad gäst eller en ny, om ny en input + query för idet?
+                    create_booking(1, 1, date(2025, 12, 14), date(2025, 12, 19), 2, Extra_beds.NONE)
                     
-    pass
+    
+    pass            

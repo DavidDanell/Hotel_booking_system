@@ -1,8 +1,8 @@
-"""First migration after messing up migration history
+"""initial
 
-Revision ID: f1174888692c
+Revision ID: 48229f1efbdd
 Revises: 
-Create Date: 2025-11-27 16:46:53.559639
+Create Date: 2025-12-01 19:02:40.866003
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f1174888692c'
+revision: str = '48229f1efbdd'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -49,9 +49,7 @@ def upgrade() -> None:
     sa.Column('extra_beds', sa.Enum('NONE', 'ONE', 'TWO', name='extra_beds'), nullable=False),
     sa.ForeignKeyConstraint(['guest_id'], ['Guests.id'], name=op.f('fk_Bookings_guest_id_Guests')),
     sa.ForeignKeyConstraint(['room_id'], ['Rooms.id'], name=op.f('fk_Bookings_room_id_Rooms')),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_Bookings')),
-    sa.UniqueConstraint('guest_id', name=op.f('uq_Bookings_guest_id')),
-    sa.UniqueConstraint('room_id', name=op.f('uq_Bookings_room_id'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_Bookings'))
     )
     op.create_table('Invoices',
     sa.Column('id', sa.String(length=35), nullable=False),

@@ -7,8 +7,8 @@ from models.base import Base
 
 class Invoice(MappedAsDataclass, Base):
     __tablename__= 'Invoices'
-    id: Mapped[int]= mapped_column(String(35), primary_key= True, init= False)
-    booking_id: Mapped[ForeignKey]= mapped_column(Integer, ForeignKey('Bookings.id'), init= False, nullable= False, unique= True)
+    id: Mapped[int]= mapped_column(String(35), primary_key= True)
+    booking_id: Mapped[int]= mapped_column(Integer, ForeignKey('Bookings.id'), nullable= False, unique= True)
     total_amount: Mapped[float]= mapped_column(DECIMAL(10, 2), nullable= False)
     issue_date: Mapped[Date]= mapped_column(Date, nullable= False)
     end_date: Mapped[Date]= mapped_column(Date, nullable= False)
