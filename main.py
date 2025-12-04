@@ -8,12 +8,30 @@ from models.rooms import Room
 from services.room_service import add_room
 from models.typings import Bed_type, Extra_beds
 from datetime import date, datetime
+from services.seeding import seeding_rooms, seeding_guest
+from models.base import Base
+from sqlalchemy import text
+
+with Session() as session:
+    session.query(Booking).delete()
+    session.query(Room).delete()
+    session.query(Guest).delete()
+
+    session.commit()
+
+    session.execute(text('ALTER TABLE Bookings AUTO_INCREMENT = 1;'))
+    session.execute(text('ALTER TABLE Rooms AUTO_INCREMENT = 1;'))
+    session.execute(text('ALTER TABLE Guests AUTO_INCREMENT = 1;'))
+
+    session.commit()
 
 
-add_room(4, Bed_type.SINGLE, Extra_beds.NONE, 300)
+
 with Session() as session:
     
-    
+    seeding_rooms(100)
+    seeding_guest(50)
+
     while True:
         print('==============================\nVälkommen till hotellet!\n==============================')
         print('1. Boknings meny\n2. Adminmeny\n0. Avsluta')
@@ -118,7 +136,8 @@ with Session() as session:
                     
                     date1= input('Från vilket datum vill du söka lediga rum? Format:"YYYY,MM,DD": ')
                     date2= input('Till vilket datum vill du söka lediga rum? Format:"YYYY,MM,DD": ')
-                    
+                    #skriv något som kollar antal personer och vilka rum tillgängliga för dem.
+
                     try:
                         y1,m1,d1 = date1.split(',')
                         y2,m2,d2 = date2.split(',')
