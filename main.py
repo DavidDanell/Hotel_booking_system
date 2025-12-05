@@ -5,7 +5,7 @@ from models.guest import Guest
 from services.guest_service import add_guest, is_valid_email
 from models.invoices import Invoice
 from models.rooms import Room
-from services.room_service import add_room
+from services.room_service import add_room, room_capacity, filter_rooms
 from models.typings import Bed_type, Extra_beds
 from datetime import date, datetime
 from services.seeding import seeding_rooms, seeding_guest
@@ -96,24 +96,46 @@ with Session() as session:
                         print('Fel format på datum, försök igen!')
                         continue
                     
+                    try:    
+                        nrpeople= int(input('skriv antalet personer som vill bo i rummet: '))
+                    except ValueError:
+                        print('Antal personer måste vara en siffra!')
+                        continue
                     occupied_during= session.query(Booking.room_id).filter(Booking.check_in_date < checkout,
                                                                                 Booking.check_out_date > checkin)
                     
                     avalible= session.query(Room).filter(~Room.id.in_(occupied_during)).all()
                     
-                    print('Lediga rum för dina datum: ')
-                    for room in avalible:
-                        print(f'Rum id: {room.id}, möjliga extra sängar: {room.possible_extra_beds.name}')    
+                    acceptable_rooms= filter_rooms(avalible, nrpeople)
+
+                    if not acceptable_rooms:
+                        print('Det finns inga tillgängliga rum som passar dina önskemål.')    
+                        continue
+                    else:
+                        print('Lediga rum för dina datum: ')
+                        for room in acceptable_rooms:
+                            if room:
+                                print(f'Rum id: {room.id}, säng: {room.number_of_beds.name}, möjliga extra sängar: {room.possible_extra_beds.name}, pris per natt: ({room.price_per_night}-kr)')    
 
                     try:
                         guestid= int(input('Skriv gästens id: '))
                         rum= int(input('Skriv vilket rum id du vill boka: '))
-                        nrpeople= int(input('skriv antalet personer som vill bo i rummet: '))
+                        room_exist= False
+
+                        for r in acceptable_rooms:
+                            if r.id == rum:
+                                room_exist= True
+                                break
+                        
+                        if not room_exist:    
+                            print('Du valde ett rum som inte är tillgängligt, försök igen')
+                            continue
+
                     except ValueError:
-                        print('Gäst id, rum och antal personer måste vara siffror!')
+                        print('Gäst id och rum måste vara siffror!')
                         continue
                     
-                    
+                    #skriv logik som kollar att personen inte kan boka ett singelrum utan extra säng om de är 2
                     extrabed= input('välj extra säng: "none", "one", "two" \ntänk på att ett rum kan inte ha fler sängar än "möjliga extra sängar"!: ').upper()
                     try:
                         if extrabed == "NONE":
@@ -136,8 +158,14 @@ with Session() as session:
                     
                     date1= input('Från vilket datum vill du söka lediga rum? Format:"YYYY,MM,DD": ')
                     date2= input('Till vilket datum vill du söka lediga rum? Format:"YYYY,MM,DD": ')
+                    persons= input('Antal personer: ')
                     #skriv något som kollar antal personer och vilka rum tillgängliga för dem.
 
+                    try:
+                        persons= int(persons)
+                    except ValueError:
+                        print('personer måste vara en siffra!')
+                        continue
                     try:
                         y1,m1,d1 = date1.split(',')
                         y2,m2,d2 = date2.split(',')
@@ -148,13 +176,18 @@ with Session() as session:
                         print('Fel format på datum, försök igen!')
                         continue
                     
+                    
                     occupied_rooms2= session.query(Booking.room_id).filter(Booking.check_in_date < last,
                                                                                 Booking.check_out_date > first)
                     
                     avalible1= session.query(Room).filter(~Room.id.in_(occupied_rooms2)).all()
 
-                    for room1 in avalible1:
-                        print(f'Rum id: {room1.id},säng: {room1.number_of_beds.name}, möjliga extra sängar: {room1.possible_extra_beds.name}')
-                        if not avalible1:
-                            print('Finns inga lediga rum för datumen!')
+                    rooms= filter_rooms(avalible1, persons)
+                    try:
+                        for room1 in rooms:
+                            print(f'Rum id: {room1.id}, säng: {room1.number_of_beds.name}, möjliga extra sängar: {room1.possible_extra_beds.name}')
+                            if not room1:
+                                print('Finns inga lediga rum för datumen!')
+                    except TypeError:
+                        ...
     pass            
