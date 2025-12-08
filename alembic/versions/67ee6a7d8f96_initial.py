@@ -1,8 +1,8 @@
 """initial
 
-Revision ID: 48229f1efbdd
+Revision ID: 67ee6a7d8f96
 Revises: 
-Create Date: 2025-12-01 19:02:40.866003
+Create Date: 2025-12-08 16:17:26.048436
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '48229f1efbdd'
+revision: str = '67ee6a7d8f96'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -42,11 +42,13 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('room_id', sa.Integer(), nullable=False),
     sa.Column('guest_id', sa.Integer(), nullable=False),
-    sa.Column('check_in_date', sa.Date(), nullable=False),
-    sa.Column('check_out_date', sa.Date(), nullable=False),
+    sa.Column('check_in_date', sa.DateTime(), nullable=False),
+    sa.Column('check_out_date', sa.DateTime(), nullable=False),
     sa.Column('number_of_people', sa.Integer(), nullable=False),
     sa.Column('price', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('extra_beds', sa.Enum('NONE', 'ONE', 'TWO', name='extra_beds'), nullable=False),
+    sa.Column('booked_at', sa.DateTime(), nullable=False),
+    sa.Column('is_cancelled', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['guest_id'], ['Guests.id'], name=op.f('fk_Bookings_guest_id_Guests')),
     sa.ForeignKeyConstraint(['room_id'], ['Rooms.id'], name=op.f('fk_Bookings_room_id_Rooms')),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_Bookings'))
@@ -55,9 +57,10 @@ def upgrade() -> None:
     sa.Column('id', sa.String(length=35), nullable=False),
     sa.Column('booking_id', sa.Integer(), nullable=False),
     sa.Column('total_amount', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('issue_date', sa.Date(), nullable=False),
-    sa.Column('end_date', sa.Date(), nullable=False),
     sa.Column('is_paid', sa.Boolean(), nullable=False),
+    sa.Column('issue_date', sa.DateTime(), nullable=False),
+    sa.Column('end_date', sa.DateTime(), nullable=False),
+    sa.Column('is_cancelled', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['booking_id'], ['Bookings.id'], name=op.f('fk_Invoices_booking_id_Bookings')),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_Invoices')),
     sa.UniqueConstraint('booking_id', name=op.f('uq_Invoices_booking_id'))

@@ -13,16 +13,19 @@ from models.base import Base
 from sqlalchemy import text
 
 with Session() as session:
+    session.query(Invoice).delete()
     session.query(Booking).delete()
     session.query(Room).delete()
     session.query(Guest).delete()
+    
 
     session.commit()
 
+    session.execute(text('ALTER TABLE Invoices AUTO_INCREMENT = 1;'))
     session.execute(text('ALTER TABLE Bookings AUTO_INCREMENT = 1;'))
     session.execute(text('ALTER TABLE Rooms AUTO_INCREMENT = 1;'))
     session.execute(text('ALTER TABLE Guests AUTO_INCREMENT = 1;'))
-
+    
     session.commit()
 
 
@@ -113,17 +116,17 @@ with Session() as session:
                         continue
                     else:
                         print('Lediga rum för dina datum: ')
-                        for room in acceptable_rooms:
-                            if room:
-                                print(f'Rum id: {room.id}, säng: {room.number_of_beds.name}, möjliga extra sängar: {room.possible_extra_beds.name}, pris per natt: ({room.price_per_night}-kr)')    
+                        for r in acceptable_rooms:
+                            if r:
+                                print(f'Rum id: {r.id}, säng: {r.number_of_beds.name}, möjliga extra sängar: {r.possible_extra_beds.name}, pris per natt: ({r.price_per_night}-kr)')    
 
                     try:
                         guestid= int(input('Skriv gästens id: '))
-                        rum= int(input('Skriv vilket rum id du vill boka: '))
+                        roomid= int(input('Skriv vilket rum id du vill boka: '))
                         room_exist= False
 
                         for r in acceptable_rooms:
-                            if r.id == rum:
+                            if r.id == roomid:
                                 room_exist= True
                                 break
                         
@@ -135,22 +138,29 @@ with Session() as session:
                         print('Gäst id och rum måste vara siffror!')
                         continue
                     
-                    #skriv logik som kollar att personen inte kan boka ett singelrum utan extra säng om de är 2
-                    extrabed= input('välj extra säng: "none", "one", "two" \ntänk på att ett rum kan inte ha fler sängar än "möjliga extra sängar"!: ').upper()
-                    try:
-                        if extrabed == "NONE":
-                            extrabed= Extra_beds.NONE
-                        if extrabed == "ONE":
-                            extrabed= Extra_beds.ONE
-                        if extrabed == "TWO":
-                            extrabed= Extra_beds.TWO
-                    except ValueError:
-                        print('Ogiltigt val vid extra säng!')
-                        continue
+                   
+                    
+                    room= session.query(Room).filter(Room.id == roomid).first()
+                    if nrpeople == 1:
+                        extrabed= Extra_beds.NONE
+
+                    if nrpeople == 2 and room.number_of_beds == Bed_type.SINGLE:
+                        extrabed= Extra_beds.ONE
+                    elif nrpeople == 2 and room.number_of_beds == Bed_type.DOUBLE:
+                        extrabed= Extra_beds.NONE
+                    
+                    if nrpeople == 3 and room.number_of_beds == Bed_type.SINGLE:
+                        extrabed= Extra_beds.TWO
+                    elif nrpeople == 3 and room.number_of_beds == Bed_type.DOUBLE:
+                        extrabed= Extra_beds.ONE
+
+                    if nrpeople == 4:
+                        extrabed= Extra_beds.TWO
+                                        
 
                     try:
-                        create_booking(guestid, rum, checkin, checkout, nrpeople, extrabed)
-                        print(f'Rum med id: {rum} har bokats!')
+                        create_booking(guestid, roomid, checkin, checkout, nrpeople, extrabed)
+                        print(f'Rum med id: {roomid} har bokats!')
                     except:
                         print('Fel vid bokning')
     
@@ -159,7 +169,7 @@ with Session() as session:
                     date1= input('Från vilket datum vill du söka lediga rum? Format:"YYYY,MM,DD": ')
                     date2= input('Till vilket datum vill du söka lediga rum? Format:"YYYY,MM,DD": ')
                     persons= input('Antal personer: ')
-                    #skriv något som kollar antal personer och vilka rum tillgängliga för dem.
+                    
 
                     try:
                         persons= int(persons)

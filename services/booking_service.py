@@ -5,7 +5,7 @@ from models.typings import Extra_beds, Bed_type
 from models.guest import Guest
 from models.invoices import Invoice
 from models.rooms import Room
-
+from services.room_service import room_capacity
 
 def create_booking(
     guest_id: int,
@@ -45,6 +45,10 @@ def create_booking(
         
         nr_of_nights= (check_out - check_in).days
         total_price= nr_of_nights * float(room.price_per_night)
+
+        if number_of_people > room_capacity(room):
+            print('Alla gäster måste ha minst en sovplats!')
+            return None
 
         try:
             booking= Booking(
