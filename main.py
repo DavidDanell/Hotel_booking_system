@@ -4,6 +4,7 @@ from services.booking_service import create_booking
 from models.guest import Guest
 from services.guest_service import add_guest, is_valid_email
 from models.invoices import Invoice
+from services.invoice_service import cancel_unpaid_bookings, unpaid_invoices, pay_invoice
 from models.rooms import Room
 from services.room_service import add_room, room_capacity, filter_rooms
 from models.typings import Bed_type, Extra_beds
@@ -21,10 +22,10 @@ with Session() as session:
 
     session.commit()
 
-    session.execute(text('ALTER TABLE Invoices AUTO_INCREMENT = 1;'))
-    session.execute(text('ALTER TABLE Bookings AUTO_INCREMENT = 1;'))
-    session.execute(text('ALTER TABLE Rooms AUTO_INCREMENT = 1;'))
-    session.execute(text('ALTER TABLE Guests AUTO_INCREMENT = 1;'))
+    session.execute(text('ALTER TABLE invoices AUTO_INCREMENT = 1;'))
+    session.execute(text('ALTER TABLE bookings AUTO_INCREMENT = 1;'))
+    session.execute(text('ALTER TABLE rooms AUTO_INCREMENT = 1;'))
+    session.execute(text('ALTER TABLE guests AUTO_INCREMENT = 1;'))
     
     session.commit()
 
@@ -32,6 +33,8 @@ with Session() as session:
 
 with Session() as session:
     
+
+    cancel_unpaid_bookings()
     seeding_rooms(100)
     seeding_guest(50)
 
@@ -104,10 +107,14 @@ with Session() as session:
                     except ValueError:
                         print('Antal personer måste vara en siffra!')
                         continue
-                    occupied_during= session.query(Booking.room_id).filter(Booking.check_in_date < checkout,
-                                                                                Booking.check_out_date > checkin)
+                    occupied_during= session.query(Booking.room_id).filter(
+                        Booking.check_in_date < checkout,
+                        Booking.check_out_date > checkin,
+                        Booking.is_cancelled == False
+                        )
                     
-                    avalible= session.query(Room).filter(~Room.id.in_(occupied_during)).all()
+                    avalible= session.query(Room).filter(
+                        ~Room.id.in_(occupied_during)).all()
                     
                     acceptable_rooms= filter_rooms(avalible, nrpeople)
 
@@ -200,4 +207,43 @@ with Session() as session:
                                 print('Finns inga lediga rum för datumen!')
                     except TypeError:
                         ...
-    pass            
+
+        elif val == "2":
+            while True:
+                print('==============================\nVälkommen till bokningsmenyn!\n==============================')
+                print('1. Avboka bokning\n2. Registrera en betalning\n3. Visa Avbokade bokningar\n0. Gå tillbaka')
+                val = input('>>>')
+                if val not in ('1', '2', '3', '4', '0'):
+                    print( 'Valet måste vara: "1", "2", "3", "4" eller "0"!')
+                    continue
+
+                elif val== "0":
+                    break
+
+                elif val == '1':
+                    while True:
+                        val1=input("Skriv boknings id för bokningen du vill avboka! ('0' för gå tillbaka)\n>>> ")
+                        if val1== '0':
+                            break
+                        try:
+                            val1=int(val1)
+                        except ValueError:
+                            print("Ogiltigt val. Måste vara ett giltigt id för en bokning!")
+                            continue
+
+                        booking=session.query(Booking).filter(Booking.id== val1).first()
+                        if not booking:
+                            print("Hittade inte en bokning med det id")
+                            continue
+                            
+                            
+                        booking.is_cancelled=True
+                        booking.invoice.is_cancelled=True
+                        session.commit()
+                        print('Bokningen har avbokats!')
+                        break
+
+
+
+                        
+    pass                

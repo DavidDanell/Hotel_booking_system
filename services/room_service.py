@@ -41,7 +41,7 @@ def room_capacity(room: Room) -> int:
     return base + extra
 
 
-def filter_rooms(rooms, people: int) -> list[Room] | None:
+def filter_rooms(rooms: list[Room], people: int) -> list[Room] | None:
     acceptable_rooms= []
     
     if people == 1:

@@ -70,8 +70,6 @@ def create_booking(
                 id= str(booking.id),
                 booking_id= booking.id,
                 total_amount= total_price,
-                issue_date= check_in,
-                end_date= check_out,
                 is_paid=False
             )
 

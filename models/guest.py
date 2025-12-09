@@ -6,13 +6,13 @@ from email_validator import validate_email, EmailNotValidError
 
 
 class Guest(MappedAsDataclass, Base):
-    __tablename__= 'Guests'
+    __tablename__= 'guests'
 
     id: Mapped[int]= mapped_column(Integer, primary_key= True, init= False)
     first_name: Mapped[str]= mapped_column(String(100), nullable= False)
     second_name: Mapped[str]= mapped_column(String(100), nullable= False)
     email_address: Mapped[str]= mapped_column(String(250), unique= True, nullable= False)
 
-    bookings: Mapped[list["Booking"]] = relationship(back_populates= 'guest', init= False)
+    bookings: Mapped[list["Booking"]] = relationship(back_populates= 'guest', init= False, uselist= True)
 
 
