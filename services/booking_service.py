@@ -69,8 +69,7 @@ def create_booking(
             invoice= Invoice(
                 id= str(booking.id),
                 booking_id= booking.id,
-                total_amount= total_price,
-                is_paid=False
+                total_amount= total_price
             )
 
             session.add(invoice)

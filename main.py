@@ -8,7 +8,7 @@ from services.invoice_service import cancel_unpaid_bookings, unpaid_invoices, pa
 from models.rooms import Room
 from services.room_service import add_room, room_capacity, filter_rooms
 from models.typings import Bed_type, Extra_beds
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, UTC
 from services.seeding import seeding_rooms, seeding_guest
 from models.base import Base
 from sqlalchemy import text
@@ -31,59 +31,61 @@ with Session() as session:
 
 
 
-with Session() as session:
+#with Session() as session:
     
 
-    cancel_unpaid_bookings()
-    seeding_rooms(100)
-    seeding_guest(50)
+cancel_unpaid_bookings()
+seeding_rooms(100)
+seeding_guest(50)
 
-    while True:
-        print('==============================\nVälkommen till hotellet!\n==============================')
-        print('1. Boknings meny\n2. Adminmeny\n0. Avsluta')
-        val = input('>>>')
-        if val not in ('1', '2', '0'):
-            print( 'Valet måste vara: "1", "2" eller "0"!')
-            continue
+while True:
+    print('==============================\nVälkommen till hotellet!\n==============================')
+    print('1. Boknings meny\n2. Adminmeny\n0. Avsluta')
+    val = input('>>>')
+    if val not in ('1', '2', '0'):
+        print( 'Valet måste vara: "1", "2" eller "0"!')
+        continue
 
-        elif val == '0':
-            print('Hejdå!')
-            break
+    elif val == '0':
+        print('Hejdå!')
+        break
 
-        elif val == '1':
-            while True:
-                print('==============================\nVälkommen till bokningsmenyn!\n==============================')
-                print('1. Registrera ny gäst\n2. Registrera en bokning\n3. Sök efter lediga rum\n0. Gå tillbaka')
-                val = input('>>>')
-                if val not in ('1', '2', '3', '0'):
-                    print( 'Valet måste vara: "1", "2", "3" eller "0"!')
+    elif val == '1':
+        while True:
+            print('==============================\nVälkommen till bokningsmenyn!\n==============================')
+            print('1. Registrera ny gäst\n2. Registrera en bokning\n3. Sök efter lediga rum\n0. Gå tillbaka')
+            val = input('>>>')
+            if val not in ('1', '2', '3', '0'):
+                print( 'Valet måste vara: "1", "2", "3" eller "0"!')
+                continue
+
+            elif val =='0':
+                break
+
+            if val == '1':
+                
+                firstname=input('Vad är gästens förnamn?: ')
+                if not firstname.isalpha():
+                    print('Namn måste bestå av bokstäver!')
+                    continue                          
+                
+                secondname=input('Vad är gästens efternamn?: ')
+                if not secondname.isalpha():
+                    print('Namn måste bestå av bokstäver!')
                     continue
 
-                elif val =='0':
-                    break
-
-                if val == '1':
-                    
-                    firstname=input('Vad är gästens förnamn?: ')
-                    if not firstname.isalpha():
-                        print('Namn måste bestå av bokstäver!')
-                        continue                          
-                    
-                    secondname=input('Vad är gästens efternamn?: ')
-                    if not secondname.isalpha():
-                        print('Namn måste bestå av bokstäver!')
-                        continue
-
-                    email=input('Vad är gästens email?: ')
-                    koll=is_valid_email(email)
-                    if not koll:
-                        print('Emailen har ogiltigt format\nGiltigt format: "namn@outlook.com"')
-                        continue
-                    
-                    add_guest(firstname, secondname, email)
+                email=input('Vad är gästens email?: ')
+                koll=is_valid_email(email)
+                if not koll:
+                    print('Emailen har ogiltigt format\nGiltigt format: "namn@outlook.com"')
+                    continue
+                
+                add_guest(firstname, secondname, email)
 
 
-                if val == '2':    
+            if val == '2':    
+                with Session() as session:
+                
                     val= input('Skriv "ja" för att visa befintliga gäster, annars tryck enter för att gå vidare: ').lower()
                     if val == 'ja':
                         guests= session.query(Guest).all()
@@ -98,6 +100,14 @@ with Session() as session:
 
                         checkin= date(int(y1),int(m1),int(d1))
                         checkout= date(int(y2),int(m2),int(d2))
+
+                        tomorrow= date.today() + timedelta(days=1)
+
+                        if checkin < tomorrow:
+                            print('Bokningen måste minst 1 dag efter dagen datum!')
+                            continue
+                         
+                        
                     except ValueError:
                         print('Fel format på datum, försök igen!')
                         continue
@@ -145,7 +155,7 @@ with Session() as session:
                         print('Gäst id och rum måste vara siffror!')
                         continue
                     
-                   
+                    
                     
                     room= session.query(Room).filter(Room.id == roomid).first()
                     if nrpeople == 1:
@@ -164,15 +174,20 @@ with Session() as session:
                     if nrpeople == 4:
                         extrabed= Extra_beds.TWO
                                         
-
+                    if nrpeople > 4:
+                        print('Antal personer måste vara mindre än 5! Vänligen dela upp er bokning.')
+                        continue
                     try:
-                        create_booking(guestid, roomid, checkin, checkout, nrpeople, extrabed)
-                        print(f'Rum med id: {roomid} har bokats!')
+                        
+                        koll= create_booking(guestid, roomid, checkin, checkout, nrpeople, extrabed)
+                        if not koll == None:
+                            print(f'Rum med id: {roomid} har bokats!')
+                        
                     except:
                         print('Fel vid bokning')
-    
-                if val == '3':
-                    
+
+            if val == '3':
+                with Session() as session:
                     date1= input('Från vilket datum vill du söka lediga rum? Format:"YYYY,MM,DD": ')
                     date2= input('Till vilket datum vill du söka lediga rum? Format:"YYYY,MM,DD": ')
                     persons= input('Antal personer: ')
@@ -208,10 +223,11 @@ with Session() as session:
                     except TypeError:
                         ...
 
-        elif val == "2":
+    elif val == "2":
+        with Session() as session:
             while True:
-                print('==============================\nVälkommen till bokningsmenyn!\n==============================')
-                print('1. Avboka bokning\n2. Registrera en betalning\n3. Visa Avbokade bokningar\n0. Gå tillbaka')
+                print('==============================\nVälkommen till Adminmenyn!\n==============================')
+                print('1. Avboka bokning\n2. Registrera en betalning\n3. Visa Avbokade bokningar\n4. Visa aktiva bokningar\n0. Gå tillbaka')
                 val = input('>>>')
                 if val not in ('1', '2', '3', '4', '0'):
                     print( 'Valet måste vara: "1", "2", "3", "4" eller "0"!')
@@ -239,11 +255,52 @@ with Session() as session:
                             
                         booking.is_cancelled=True
                         booking.invoice.is_cancelled=True
+                        print('Bokningen med id:', booking.id, 'har avbokats!')
                         session.commit()
-                        print('Bokningen har avbokats!')
+                        
                         break
 
+                elif val == '2':
+                    while True:
+                        val1=input('Skriv boknings id för fakturan du vill betala ("0" för gå tillbaka)\n>>>')
 
+                        if val1== '0':
+                            break
+                        try:
+                            val1=int(val1)
+                        except ValueError:
+                            print("Ogiltigt val. Måste vara ett giltigt id för en bokning!")
+                            continue
 
+                        booking= session.query(Booking).filter(Booking.id == val1).first()
+                        if not booking:
+                                print("Hittade inte en bokning med det id")
+                                continue
                         
-    pass                
+                        print(f'{booking.invoice.total_amount} kr att betala.')
+                        print('Betalning godkänd!')
+                        booking.invoice.is_paid= True
+                        session.commit()
+
+                elif val == '3':
+                    cancelled_bookings= session.query(Booking).filter(Booking.is_cancelled == True).all()
+                    if not cancelled_bookings:
+                        print('Det finns inga avbokade bokningar!')
+                    else:
+                        print('Avbokade bokningar\n>>>')
+                        for booking in cancelled_bookings:
+                            print(f'Boknings id: {booking.id}, bokad: {booking.booked_at}')
+
+                elif val == '4':
+                    active_bookings= session.query(Booking).filter(Booking.is_cancelled == False).all()
+
+                    if active_bookings:
+                        for booking in active_bookings:
+                            print(f'id: {booking.id}, bokad: {booking.booked_at}')
+
+                    else:
+                        print('Finns inga activa bokningar!')
+
+
+                    
+pass                

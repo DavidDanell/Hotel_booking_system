@@ -11,7 +11,7 @@ class Invoice(MappedAsDataclass, Base):
     id: Mapped[str]= mapped_column(String(35), primary_key= True)
     booking_id: Mapped[int]= mapped_column(Integer, ForeignKey('bookings.id'), nullable= False, unique= True)
     total_amount: Mapped[float]= mapped_column(DECIMAL(10, 2), nullable= False)
-    is_paid: Mapped[bool]= mapped_column(Boolean, nullable= False)
+    is_paid: Mapped[bool]= mapped_column(Boolean, nullable= False, default= False, init= False)
     issue_date: Mapped[datetime]= mapped_column(DateTime, default= datetime.utcnow, nullable= False, init=False)
     end_date: Mapped[datetime]= mapped_column(DateTime, default= calculate_end_date ,nullable= False, init=False)
     is_cancelled: Mapped[bool]= mapped_column(Boolean, nullable= False, default= False, init= False)
