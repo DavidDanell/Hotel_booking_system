@@ -114,6 +114,8 @@ while True:
                     
                     try:    
                         nrpeople= int(input('skriv antalet personer som vill bo i rummet: '))
+                        if nrpeople  > 4 or nrpeople <1:
+                            print('Rummen kan hantera max 4 personer och minst 1!')
                     except ValueError:
                         print('Antal personer måste vara en siffra!')
                         continue
@@ -183,8 +185,8 @@ while True:
                         if not koll == None:
                             print(f'Rum med id: {roomid} har bokats!')
                         
-                    except:
-                        print('Fel vid bokning')
+                    except Exception as e:
+                        print('Fel vid bokning', e)
 
             if val == '3':
                 with Session() as session:
