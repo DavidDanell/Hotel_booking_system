@@ -13,25 +13,24 @@ from services.seeding import seeding_rooms, seeding_guest
 from models.base import Base
 from sqlalchemy import text
 
-with Session() as session:
-    session.query(Invoice).delete()
-    session.query(Booking).delete()
-    session.query(Room).delete()
-    session.query(Guest).delete()
+# with Session() as session:
+#     session.query(Invoice).delete()
+#     session.query(Booking).delete()
+#     session.query(Room).delete()
+#     session.query(Guest).delete()
     
 
-    session.commit()
+#     session.commit()
 
-    session.execute(text('ALTER TABLE invoices AUTO_INCREMENT = 1;'))
-    session.execute(text('ALTER TABLE bookings AUTO_INCREMENT = 1;'))
-    session.execute(text('ALTER TABLE rooms AUTO_INCREMENT = 1;'))
-    session.execute(text('ALTER TABLE guests AUTO_INCREMENT = 1;'))
+#     session.execute(text('ALTER TABLE invoices AUTO_INCREMENT = 1;'))
+#     session.execute(text('ALTER TABLE bookings AUTO_INCREMENT = 1;'))
+#     session.execute(text('ALTER TABLE rooms AUTO_INCREMENT = 1;'))
+#     session.execute(text('ALTER TABLE guests AUTO_INCREMENT = 1;'))
     
-    session.commit()
+#     session.commit()
 
 
 
-#with Session() as session:
     
 
 cancel_unpaid_bookings()
@@ -104,7 +103,7 @@ while True:
                         tomorrow= date.today() + timedelta(days=1)
 
                         if checkin < tomorrow:
-                            print('Bokningen måste minst 1 dag efter dagen datum!')
+                            print('Bokningen måste vara minst 1 dag efter dagen datum!')
                             continue
                          
                         
@@ -240,7 +239,17 @@ while True:
 
                 elif val == '1':
                     while True:
+                        bookings= session.query(Booking).filter(Booking.is_cancelled== False, Booking.check_in_date > date.today()).all()
+                        if not bookings:
+                            print('Det finns inga avbokningsbara bokningar!')
+                            continue
+                        
+                        
+                        for b in bookings:
+                            print(f'ID: {b.id}, rum id: {b.room_id}, datum: {b.check_in_date} - {b.check_out_date}')
                         val1=input("Skriv boknings id för bokningen du vill avboka! ('0' för gå tillbaka)\n>>> ")
+                        
+                        
                         if val1== '0':
                             break
                         try:
@@ -253,17 +262,32 @@ while True:
                         if not booking:
                             print("Hittade inte en bokning med det id")
                             continue
-                            
+
+                        if booking and booking.check_in_date <= date.today():
+                            print('En bokning kan senast avbokas en dag innan check in!')    
+                            break
                             
                         booking.is_cancelled=True
                         booking.invoice.is_cancelled=True
                         print('Bokningen med id:', booking.id, 'har avbokats!')
+                        if booking.invoice.is_paid:
+                            print('Betalningen har återbetalats!')
                         session.commit()
                         
                         break
 
                 elif val == '2':
                     while True:
+                        
+                        bookings= session.query(Booking).join(Booking.invoice).filter(Invoice.is_paid== False).all()
+                        if not bookings:
+                            print('Det finns inga bokningar att betala!')
+                            break
+                        
+                        print('Bokningar:')
+                        for b in bookings:
+                            print(f'Boknings id: {b.id}, invoice id: {b.invoice.id}, summa att betala: {b.invoice.total_amount} kr')
+                        
                         val1=input('Skriv boknings id för fakturan du vill betala ("0" för gå tillbaka)\n>>>')
 
                         if val1== '0':
@@ -294,11 +318,12 @@ while True:
                             print(f'Boknings id: {booking.id}, bokad: {booking.booked_at}')
 
                 elif val == '4':
-                    active_bookings= session.query(Booking).filter(Booking.is_cancelled == False).all()
+                    active_bookings= session.query(Booking).join(Booking.invoice).filter(Booking.is_cancelled == False).all()
 
                     if active_bookings:
+                        print('Aktiva bokningar: ')
                         for booking in active_bookings:
-                            print(f'id: {booking.id}, bokad: {booking.booked_at}')
+                            print(f'id: {booking.id}, check in: {booking.check_in_date}, check out: {booking.check_out_date}, är betald: {booking.invoice.is_paid}, rum id: {booking.room_id}')
 
                     else:
                         print('Finns inga activa bokningar!')
