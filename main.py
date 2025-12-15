@@ -242,7 +242,7 @@ while True:
                         bookings= session.query(Booking).filter(Booking.is_cancelled== False, Booking.check_in_date > date.today()).all()
                         if not bookings:
                             print('Det finns inga avbokningsbara bokningar!')
-                            continue
+                            break
                         
                         
                         for b in bookings:
